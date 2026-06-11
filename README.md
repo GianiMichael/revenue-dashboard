@@ -17,7 +17,7 @@ A fully interactive business intelligence dashboard built from scratch using HTM
 
 ## Live Demo
 
-[View Dashboard]((https://apex-consulting-dashboard.netlify.app/)
+[View Dashboard](https://apex-consulting-dashboard.netlify.app/)
 
 ## Built By
 
