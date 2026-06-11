@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Apex Consulting — Revenue Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#030f12;font-family:'Inter',sans-serif;color:#fff;}
+  .dash{background:#030f12;min-height:100vh;padding:0 0 60px;}
+  .hdr{background:#030f12;border-bottom:1px solid rgba(255,255,255,.07);padding:18px 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .hdr-left{display:flex;align-items:center;gap:16px;}
+  .brand{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:#fff;}
+  .brand span{color:#2dd4bf;}
+  .bsub{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;letter-spacing:.9px;text-transform:uppercase;font-weight:500;}
+  .hdr-right{display:flex;align-items:center;gap:10px;}
+  .qbadge{background:rgba(13,148,136,.15);border:1px solid rgba(13,148,136,.35);color:#2dd4bf;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;}
+  .tabs{background:#030f12;border-bottom:1px solid rgba(255,255,255,.07);padding:0 36px;display:flex;}
+  .tab{padding:14px 28px;font-size:13px;font-weight:600;color:rgba(255,255,255,.38);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .15s;}
+  .tab:hover{color:#fff;}
+  .tab.active{color:#2dd4bf;border-bottom-color:#0d9488;}
+  .body{padding:32px 36px;max-width:1400px;margin:0 auto;}
+  .slabel{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px;}
+  .kcard{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px 24px;}
+  .kcard.hl{background:rgba(13,148,136,.1);border-color:rgba(13,148,136,.3);}
+  .kcard.lk{background:rgba(13,148,136,.07);border-color:rgba(13,148,136,.22);}
+  .kcard.sp{background:rgba(168,85,247,.07);border-color:rgba(168,85,247,.25);}
+  .klabel{font-size:12px;color:rgba(255,255,255,.62);font-weight:500;margin-bottom:12px;}
+  .kval{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff;line-height:1;}
+  .kval.bl{color:#2dd4bf;}.kval.am{color:#fbbf24;}.kval.gr{color:#34d399;}.kval.pu{color:#c084fc;}
+  .ksub{font-size:12px;color:rgba(255,255,255,.48);margin-top:8px;}
+  .lkbadge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#2dd4bf;background:rgba(13,148,136,.15);border:1px solid rgba(13,148,136,.3);padding:3px 10px;border-radius:10px;margin-top:8px;}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px;}
+  .panel{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:24px;}
+  .ptitle{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;}
+  .pdesc{font-size:12px;color:rgba(255,255,255,.52);margin-bottom:22px;}
+  .mrow{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .mname{width:44px;font-size:13px;font-weight:700;color:rgba(255,255,255,.45);flex-shrink:0;}
+  .minput{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-family:'Inter',sans-serif;font-size:13px;padding:8px 12px;width:136px;outline:none;flex-shrink:0;}
+  .minput:focus{border-color:#0d9488;background:rgba(13,148,136,.08);}
+  .minput.lkm{background:rgba(13,148,136,.08);border-color:rgba(13,148,136,.3);color:#2dd4bf;font-weight:600;}
+  .bwrap{flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;}
+  .bar{height:100%;border-radius:3px;background:#0d9488;transition:width .4s;}
+  .mtot{font-size:13px;font-weight:600;color:rgba(255,255,255,.5);width:80px;text-align:right;flex-shrink:0;}
+  .hdiv{height:1px;background:rgba(255,255,255,.06);margin:4px 0;}
+  .qsetup{display:flex;flex-direction:column;gap:16px;}
+  .qrow{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .qrlabel{font-size:13px;color:rgba(255,255,255,.5);}
+  .qinput{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;padding:10px 14px;width:168px;outline:none;text-align:right;}
+  .qinput:focus{border-color:#0d9488;}
+  .qinput.lk{background:rgba(13,148,136,.08)!important;border-color:rgba(13,148,136,.3)!important;color:#2dd4bf!important;}
+  .qinput.gy{background:rgba(255,255,255,.03)!important;border-color:rgba(255,255,255,.07)!important;color:rgba(255,255,255,.28)!important;}
+  .awrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:28px;margin-bottom:32px;}
+  .ahdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
+  .apct{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;line-height:1;color:#2dd4bf;}
+  .albl{font-size:12px;color:rgba(255,255,255,.52);margin-top:6px;letter-spacing:.5px;}
+  .apbox{text-align:right;}
+  .aplbl{font-size:11px;color:rgba(255,255,255,.52);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;font-weight:600;}
+  .apval{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;}
+  .ptrack{height:12px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden;margin-bottom:24px;}
+  .pfill{height:100%;border-radius:6px;transition:width .5s;background:#0d9488;}
+  .tgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;}
+  .tc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 6px;text-align:center;}
+  .tc.act{background:rgba(13,148,136,.2);border-color:#0d9488;}
+  .tc.ach{background:rgba(13,148,136,.1);border-color:rgba(13,148,136,.3);}
+  .tr{font-size:10px;color:rgba(255,255,255,.3);margin-bottom:5px;font-weight:600;}
+  .tc.act .tr{color:#5eead4;}.tc.ach .tr{color:rgba(45,212,191,.6);}
+  .tp{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:rgba(255,255,255,.38);}
+  .tc.act .tp{color:#2dd4bf;}.tc.ach .tp{color:#34d399;}
+  .spanel{background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.18);border-radius:14px;padding:24px;margin-bottom:32px;}
+  .stotal{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:#c084fc;}
+  .scount{font-size:12px;color:rgba(168,85,247,.55);margin-top:4px;}
+  .slist{margin:20px 0 16px;display:flex;flex-direction:column;gap:10px;}
+  .sitem{display:flex;align-items:center;gap:12px;background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.14);border-radius:10px;padding:12px 16px;}
+  .snum{font-size:12px;color:rgba(168,85,247,.5);font-weight:700;width:22px;flex-shrink:0;}
+  .sdesc{flex:1;background:transparent;border:none;color:rgba(255,255,255,.75);font-family:'Inter',sans-serif;font-size:13px;outline:none;}
+  .sdesc::placeholder{color:rgba(255,255,255,.18);}
+  .samt{background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.2);border-radius:7px;color:#c084fc;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:6px 10px;width:120px;outline:none;text-align:right;}
+  .sdel{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:15px;padding:0 4px;}
+  .sdel:hover{color:#f87171;}
+  .saddbtn{display:flex;align-items:center;gap:8px;background:rgba(168,85,247,.08);border:1px dashed rgba(168,85,247,.28);border-radius:10px;padding:12px 16px;color:rgba(168,85,247,.65);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;width:100%;justify-content:center;}
+  .saddbtn:hover{background:rgba(168,85,247,.14);color:#c084fc;}
+  .sempty{font-size:13px;color:rgba(255,255,255,.18);text-align:center;padding:8px 0;}
+  .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px;}
+  .ccard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:24px;}
+  .chdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .ctitle{font-size:12px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:rgba(255,255,255,.35);}
+  .cbadge{font-size:11px;font-weight:600;padding:4px 12px;border-radius:12px;}
+  .bq4{background:rgba(107,114,128,.18);color:#9ca3af;}
+  .bclosed{background:rgba(13,148,136,.15);color:#2dd4bf;border:1px solid rgba(13,148,136,.28);}
+  .biprog{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.28);}
+  .cnum{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff;margin-bottom:4px;}
+  .csub{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:18px;}
+  .cbwrap{height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+  .cb{height:100%;border-radius:4px;transition:width .4s;}
+  .cnote{font-size:12px;color:rgba(255,255,255,.48);}
+  .chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:5px 12px;border-radius:12px;margin-top:10px;}
+  .cg{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.22);}
+  .cr{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.22);}
+  .arrpanel{background:rgba(13,148,136,.05);border:1px solid rgba(13,148,136,.18);border-radius:14px;padding:28px;margin-bottom:32px;}
+  .arr-top{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+  .arr-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:18px 20px;text-align:center;}
+  .arr-label{font-size:11px;color:rgba(255,255,255,.32);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-weight:600;}
+  .arr-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;}
+  .arr-val.go{color:#fbbf24;}.arr-val.gr{color:#2dd4bf;}.arr-val.bl{color:#60a5fa;}
+  .arr-sub{font-size:11px;color:rgba(255,255,255,.26);margin-top:4px;}
+  .arr-chart{display:flex;align-items:flex-end;gap:10px;height:160px;margin-bottom:16px;}
+  .arr-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .arr-bar-label{font-size:11px;color:rgba(255,255,255,.38);font-weight:600;}
+  .arr-bar-val{font-size:11px;color:rgba(255,255,255,.55);font-weight:600;}
+  .arr-legend{display:flex;gap:20px;justify-content:center;margin-bottom:16px;}
+  .arr-leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.38);}
+  .arr-leg-dot{width:10px;height:10px;border-radius:50%;}
+  .pace-indicator{display:flex;align-items:center;gap:12px;background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.2);border-radius:10px;padding:14px 18px;}
+  .pace-text{font-size:13px;color:rgba(255,255,255,.65);flex:1;}
+  .pace-text strong{color:#2dd4bf;font-weight:600;}
+  .foot{font-size:12px;color:rgba(255,255,255,.18);text-align:center;margin-top:16px;}
+  .foot a{color:rgba(13,148,136,.7);text-decoration:none;}
+  .foot a:hover{color:#2dd4bf;}
+  input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+  input[type=number]{-moz-appearance:textfield;}
+</style>
+</head>
+<body>
+<div class="dash">
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="44" height="44" rx="10" fill="#071d22"/>
+        <rect x="1" y="1" width="42" height="42" rx="9" stroke="#0d9488" stroke-width="1" stroke-opacity=".4"/>
+        <path d="M12 28 L18 16 L22 24 L26 19 L32 28" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="32" cy="28" r="2.5" fill="#2dd4bf"/>
+        <path d="M12 31 L32 31" stroke="#0d9488" stroke-width="1" stroke-opacity=".4"/>
+      </svg>
+      <div>
+        <div class="brand">Apex<span>Consulting</span></div>
+        <div class="bsub">Revenue Performance Dashboard</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="qbadge" id="current-badge">Q1 2026</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('Q1')">Q1 2026</div>
+    <div class="tab" onclick="switchTab('Q2')">Q2 2026</div>
+    <div class="tab" onclick="switchTab('Q3')">Q3 2026</div>
+    <div class="tab" onclick="switchTab('Q4')">Q4 2026</div>
+  </div>
+
+  <div class="body">
+    <div class="slabel">Live KPIs</div>
+    <div class="kgrid">
+      <div class="kcard lk">
+        <div class="klabel">Prior Quarter Actual</div>
+        <div class="kval gr" id="kpi-prior">—</div>
+        <div class="ksub" id="kpi-prior-label">—</div>
+      </div>
+      <div class="kcard lk">
+        <div class="klabel">Revenue To Date (incl. SPIFFs)</div>
+        <div class="kval bl" id="kpi-rev">—</div>
+        <div class="ksub" id="kpi-rev-sub">—</div>
+      </div>
+      <div class="kcard hl">
+        <div class="klabel">Quota Goal</div>
+        <div class="kval am" id="kpi-quota">—</div>
+        <div class="ksub">Set in Quota Setup below</div>
+      </div>
+      <div class="kcard sp">
+        <div class="klabel">SPIFFs Paid Out</div>
+        <div class="kval pu" id="kpi-spiff">$0</div>
+        <div class="ksub" id="kpi-spiff-sub">0 SPIFFs this quarter</div>
+      </div>
+    </div>
+
+    <div class="mgrid">
+      <div class="panel">
+        <div class="ptitle" id="month-panel-title">Monthly Breakdown</div>
+        <div class="pdesc">Enter each month's billed revenue as it closes</div>
+        <div id="month-rows"></div>
+        <div class="hdiv" style="margin:18px 0;"></div>
+        <div class="mrow">
+          <div class="mname" style="color:#fff;font-weight:700;">TOTAL</div>
+          <div style="flex:1"></div>
+          <div class="mtot" id="rev-total" style="color:#2dd4bf;font-size:15px;font-weight:700;">—</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ptitle">Quota Setup</div>
+        <div class="pdesc">Set the quota target for this quarter</div>
+        <div class="qsetup" id="quota-setup"></div>
+      </div>
+    </div>
+
+    <div class="slabel">Attainment & Commission Tier</div>
+    <div class="awrap">
+      <div class="ahdr">
+        <div>
+          <div class="apct" id="apct">—</div>
+          <div class="albl">TBR GROWTH OVER QUOTA (INCL. SPIFFS)</div>
+        </div>
+        <div class="apbox">
+          <div class="aplbl">Projected Payout</div>
+          <div class="apval" id="apval" style="color:#2dd4bf;">—</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:4px;">of base TBR incentive</div>
+        </div>
+      </div>
+      <div class="ptrack"><div class="pfill" id="pfill" style="width:0%"></div></div>
+      <div class="tgrid" id="tgrid"></div>
+    </div>
+
+    <div class="slabel">SPIFF Tracker</div>
+    <div class="spanel">
+      <div style="margin-bottom:6px;">
+        <div style="font-size:11px;color:rgba(168,85,247,.55);letter-spacing:.9px;text-transform:uppercase;margin-bottom:6px;font-weight:600;">Total Paid Out This Quarter</div>
+        <div class="stotal" id="stotal">$0.00</div>
+        <div class="scount" id="scount">0 SPIFFs logged</div>
+      </div>
+      <div class="slist" id="slist"><div class="sempty" id="sempty">No SPIFFs logged yet</div></div>
+      <button class="saddbtn" onclick="addSpiff()">+ Add SPIFF</button>
+    </div>
+
+    <div class="slabel">Quarter Over Quarter Comparison</div>
+    <div class="cgrid" id="qoq-grid"></div>
+
+    <div class="slabel">Annual Run Rate Projector</div>
+    <div class="arrpanel">
+      <div class="arr-top">
+        <div class="arr-card">
+          <div class="arr-label">Current ARR Pace</div>
+          <div class="arr-val go" id="arr-pace">—</div>
+          <div class="arr-sub">Based on closed quarters</div>
+        </div>
+        <div class="arr-card">
+          <div class="arr-label">Full Year Target</div>
+          <div class="arr-val bl" id="arr-target">—</div>
+          <div class="arr-sub">Sum of all quotas</div>
+        </div>
+        <div class="arr-card">
+          <div class="arr-label">Year-to-Date Revenue</div>
+          <div class="arr-val gr" id="arr-ytd">—</div>
+          <div class="arr-sub">All closed quarters</div>
+        </div>
+      </div>
+      <div class="arr-chart" id="arr-chart"></div>
+      <div class="arr-legend">
+        <div class="arr-leg-item"><div class="arr-leg-dot" style="background:#0d9488;"></div>Actual Revenue</div>
+        <div class="arr-leg-item"><div class="arr-leg-dot" style="background:rgba(251,191,36,.5);border:1px solid rgba(251,191,36,.7);"></div>Quota Target</div>
+        <div class="arr-leg-item"><div class="arr-leg-dot" style="background:rgba(255,255,255,.12);"></div>Projected</div>
+      </div>
+      <div class="pace-indicator">
+        <div class="pace-text" id="pace-text">Enter revenue data to see the annual run rate projection.</div>
+      </div>
+    </div>
+
+    <div class="foot">
+      Apex Consulting Revenue Dashboard &nbsp;&middot;&nbsp; Built by
+      <a href="https://www.linkedin.com/in/giancarlomichael/" target="_blank">Giani Michael</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUARTERS=['Q1','Q2','Q3','Q4'];
+const MONTHS={Q1:['Jan','Feb','Mar'],Q2:['Apr','May','Jun'],Q3:['Jul','Aug','Sep'],Q4:['Oct','Nov','Dec']};
+const PRIOR={Q1:'4Q 2025',Q2:'Q1 2026',Q3:'Q2 2026',Q4:'Q3 2026'};
+const TIERS=[{min:0,label:'0-4.9%',payout:'0%'},{min:5,label:'5-9.9%',payout:'25%'},{min:10,label:'10-14.9%',payout:'50%'},{min:15,label:'15-19.9%',payout:'100%'},{min:20,label:'20-24.9%',payout:'150%'},{min:25,label:'25-29.9%',payout:'200%'},{min:30,label:'30-49.9%',payout:'250%'},{min:50,label:'50%+',payout:'300%'}];
+const SEED={
+  revenue:{
+    Q1:{Jan:{amount:287500,locked:true},Feb:{amount:312000,locked:true},Mar:{amount:298750,locked:true}},
+    Q2:{Apr:{amount:341200,locked:true},May:{amount:328900,locked:true},Jun:{amount:0,locked:false}},
+    Q3:{},Q4:{}
+  },
+  quotas:{Q1:{quota:850000},Q2:{quota:1050000},Q3:{quota:1100000},Q4:{quota:1150000}},
+  spiffs:{
+    Q1:[{id:'s1',description:'Enterprise SaaS close',amount:3500},{id:'s2',description:'New logo — manufacturing vertical',amount:2000}],
+    Q2:[{id:'s3',description:'Upsell — existing account',amount:1500}],
+    Q3:[],Q4:[]
+  }
+};
+let currentQ='Q1';
+let state=JSON.parse(JSON.stringify(SEED));
+let sc=10;
+
+function fmt(n){return(isNaN(n)||n===null)?'—':'$'+Math.round(n).toLocaleString();}
+function fmtD(n){if(isNaN(n)||n===null)return'$0.00';return'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function tidx(g){for(let i=TIERS.length-1;i>=0;i--)if(g>=TIERS[i].min)return i;return 0;}
+function getRevTotal(q){return(MONTHS[q]||[]).reduce((s,m)=>s+((state.revenue[q]&&state.revenue[q][m])?(state.revenue[q][m].amount||0):0),0);}
+function getSpiffTotal(q){return(state.spiffs[q]||[]).reduce((s,x)=>s+(x.amount||0),0);}
+function getCombined(q){return getRevTotal(q)+getSpiffTotal(q);}
+function getQuota(q){return state.quotas[q]?(state.quotas[q].quota||0):0;}
+
+function render(){buildTiers();renderMonths();renderQuotaSetup();renderKPIs();renderAttainment();renderSpiffs();renderQoQ();renderARR();}
+
+function buildTiers(){
+  const g=document.getElementById('tgrid');g.innerHTML='';
+  TIERS.forEach((t,i)=>{const c=document.createElement('div');c.className='tc';c.id='tc'+i;c.innerHTML='<div class="tr">'+t.label+'</div><div class="tp">'+t.payout+'</div>';g.appendChild(c);});
+}
+
+function renderMonths(){
+  const q=currentQ;const months=MONTHS[q];
+  document.getElementById('month-panel-title').textContent=q+' Monthly Breakdown';
+  const container=document.getElementById('month-rows');container.innerHTML='';
+  const maxAmt=Math.max(...months.map(m=>(state.revenue[q]&&state.revenue[q][m])?state.revenue[q][m].amount:0),1);
+  months.forEach(m=>{
+    const entry=(state.revenue[q]&&state.revenue[q][m])?state.revenue[q][m]:{amount:0,locked:false};
+    const isLocked=entry.locked;const amt=entry.amount||0;
+    const row=document.createElement('div');row.className='mrow';
+    row.innerHTML='<div class="mname">'+m.toUpperCase()+'</div><input class="minput'+(isLocked?' lkm':'')+'" type="number" id="inp-'+m+'" value="'+(amt||'')+'" placeholder="$0" '+(isLocked?'readonly':'')+' oninput="onRevInput(\''+m+'\',this.value)"/><div class="bwrap"><div class="bar" id="bar-'+m+'" style="width:'+Math.round(amt/maxAmt*100)+'%"></div></div><div class="mtot" id="tot-'+m+'" style="'+(isLocked?'color:#2dd4bf;':'')+'">'+(amt>0?fmt(amt):'—')+'</div>';
+    container.appendChild(row);
+  });
+  document.getElementById('rev-total').textContent=fmt(getCombined(q));
+}
+
+function onRevInput(month,val){
+  const q=currentQ;const amount=parseFloat(val)||0;
+  if(!state.revenue[q])state.revenue[q]={};
+  if(!state.revenue[q][month])state.revenue[q][month]={amount:0,locked:false};
+  state.revenue[q][month].amount=amount;
+  const months=MONTHS[q];const maxAmt=Math.max(...months.map(m=>(state.revenue[q]&&state.revenue[q][m])?state.revenue[q][m].amount:0),1);
+  months.forEach(m=>{const a=(state.revenue[q]&&state.revenue[q][m])?state.revenue[q][m].amount:0;const b=document.getElementById('bar-'+m);const t=document.getElementById('tot-'+m);if(b)b.style.width=Math.round(a/maxAmt*100)+'%';if(t)t.textContent=a>0?fmt(a):'—';});
+  document.getElementById('rev-total').textContent=fmt(getCombined(q));
+  renderKPIs();renderAttainment();renderQoQ();renderARR();
+}
+
+function renderQuotaSetup(){
+  const q=currentQ;const container=document.getElementById('quota-setup');container.innerHTML='';
+  const priorQ=QUARTERS[QUARTERS.indexOf(q)-1];
+  const priorTotal=priorQ?getCombined(priorQ):(q==='Q1'?1050000:0);
+  const r1=document.createElement('div');r1.className='qrow';
+  r1.innerHTML='<div class="qrlabel">'+PRIOR[q]+' Actual</div><input class="qinput gy" type="number" value="'+(Math.round(priorTotal)||'')+'" readonly/>';
+  container.appendChild(r1);
+  const hd=document.createElement('div');hd.className='hdiv';container.appendChild(hd);
+  const quota=getQuota(q);
+  const r2=document.createElement('div');r2.className='qrow';
+  r2.innerHTML='<div class="qrlabel" style="font-weight:600;color:#fff;">'+q+' Quota Target</div><input class="qinput" type="number" id="quota-inp" value="'+(quota||'')+'" placeholder="$0" oninput="onQuotaInput(this.value)"/>';
+  container.appendChild(r2);
+  const hint=document.createElement('div');hint.style.cssText='font-size:12px;color:rgba(255,255,255,.18);padding-top:4px;';hint.textContent='Enter quota target to unlock attainment and commission tracking.';container.appendChild(hint);
+}
+
+function onQuotaInput(val){
+  const q=currentQ;const quota=parseFloat(val)||0;
+  if(!state.quotas[q])state.quotas[q]={quota:0};
+  state.quotas[q].quota=quota;
+  document.getElementById('kpi-quota').textContent=quota>0?fmt(quota):'—';
+  renderAttainment();renderARR();
+}
+
+function renderKPIs(){
+  const q=currentQ;const priorQ=QUARTERS[QUARTERS.indexOf(q)-1];
+  const priorTotal=priorQ?getCombined(priorQ):1050000;
+  const combined=getCombined(q);const spiffTotal=getSpiffTotal(q);const spiffCount=(state.spiffs[q]||[]).length;const quota=getQuota(q);
+  document.getElementById('kpi-prior').textContent=priorTotal>0?fmt(priorTotal):'—';
+  document.getElementById('kpi-prior-label').textContent=(PRIOR[q]||'Prior Quarter')+' Actual';
+  document.getElementById('kpi-rev').textContent=combined>0?fmt(combined):'—';
+  const months=MONTHS[q];const closed=months.filter(m=>state.revenue[q]&&state.revenue[q][m]&&state.revenue[q][m].amount>0);
+  document.getElementById('kpi-rev-sub').textContent=closed.length>0?closed.join(' + ')+(closed.length<3?' — '+months[closed.length]+' pending':' — All closed'):'No months entered yet';
+  document.getElementById('kpi-quota').textContent=quota>0?fmt(quota):'—';
+  document.getElementById('kpi-spiff').textContent=fmtD(spiffTotal);
+  document.getElementById('kpi-spiff-sub').textContent=spiffCount+' SPIFF'+(spiffCount===1?'':'s')+' this quarter';
+  document.getElementById('current-badge').textContent=q+' 2026';
+}
+
+function renderAttainment(){
+  const q=currentQ;const combined=getCombined(q);const quota=getQuota(q);
+  if(quota>0){
+    const gr=((combined-quota)/quota)*100;const cl=Math.max(gr,0);const idx=tidx(cl);
+    document.getElementById('apct').textContent=(gr>=0?'+':'')+(Math.round(gr*10)/10)+'%';
+    document.getElementById('apct').style.color=gr>=0?'#2dd4bf':'#f87171';
+    document.getElementById('apval').textContent=TIERS[idx].payout;
+    document.getElementById('apval').style.color=idx>=3?'#2dd4bf':idx>=1?'#fbbf24':'#f87171';
+    document.getElementById('pfill').style.width=Math.min(cl,60)/60*100+'%';
+    TIERS.forEach((_,i)=>document.getElementById('tc'+i).className='tc'+(i===idx?' act':i<idx?' ach':''));
+  }else{
+    document.getElementById('apct').textContent='—';document.getElementById('apct').style.color='#2dd4bf';
+    document.getElementById('apval').textContent='—';document.getElementById('pfill').style.width='0%';
+    TIERS.forEach((_,i)=>document.getElementById('tc'+i).className='tc');
+  }
+}
+
+function renderSpiffs(){
+  const q=currentQ;const spiffs=state.spiffs[q]||[];const total=spiffs.reduce((s,x)=>s+(x.amount||0),0);const cnt=spiffs.length;
+  document.getElementById('stotal').textContent=fmtD(total);
+  document.getElementById('scount').textContent=cnt===0?'0 SPIFFs logged':cnt+' SPIFF'+(cnt===1?'':'s')+' logged';
+  document.getElementById('sempty').style.display=cnt===0?'block':'none';
+  const list=document.getElementById('slist');list.querySelectorAll('.sitem').forEach(el=>el.remove());
+  spiffs.forEach((sp,idx)=>{
+    const row=document.createElement('div');row.className='sitem';row.id=sp.id;
+    row.innerHTML='<div class="snum">#'+(idx+1)+'</div><input class="sdesc" type="text" value="'+(sp.description||'')+'" placeholder="Description (optional)" oninput="onSpiffDesc(\''+sp.id+'\',this.value)"/><input class="samt" type="number" value="'+(sp.amount||'')+'" placeholder="$0.00" oninput="onSpiffAmt(\''+sp.id+'\',this.value)"/><button class="sdel" onclick="delSpiff(\''+sp.id+'\')">&#10005;</button>';
+    list.appendChild(row);
+  });
+}
+
+function addSpiff(){
+  const q=currentQ;if(!state.spiffs[q])state.spiffs[q]=[];
+  const id='s'+sc++;state.spiffs[q].push({id,description:'',amount:0});
+  renderSpiffs();updateSpiffKPIs();
+}
+function onSpiffDesc(id,val){const q=currentQ;const sp=(state.spiffs[q]||[]).find(x=>x.id===id);if(sp)sp.description=val;}
+function onSpiffAmt(id,val){const q=currentQ;const sp=(state.spiffs[q]||[]).find(x=>x.id===id);if(sp){sp.amount=parseFloat(val)||0;updateSpiffKPIs();renderKPIs();renderAttainment();renderQoQ();renderARR();}}
+function delSpiff(id){const q=currentQ;state.spiffs[q]=(state.spiffs[q]||[]).filter(x=>x.id!==id);renderSpiffs();updateSpiffKPIs();renderKPIs();renderAttainment();renderQoQ();renderARR();}
+function updateSpiffKPIs(){
+  const q=currentQ;const spiffs=state.spiffs[q]||[];const total=spiffs.reduce((s,x)=>s+(x.amount||0),0);const cnt=spiffs.length;
+  document.getElementById('stotal').textContent=fmtD(total);document.getElementById('scount').textContent=cnt===0?'0 SPIFFs logged':cnt+' SPIFF'+(cnt===1?'':'s')+' logged';
+  document.getElementById('kpi-spiff').textContent=fmtD(total);document.getElementById('kpi-spiff-sub').textContent=cnt+' SPIFF'+(cnt===1?'':'s')+' this quarter';
+  document.getElementById('rev-total').textContent=fmt(getCombined(q));
+}
+
+function renderQoQ(){
+  const grid=document.getElementById('qoq-grid');grid.innerHTML='';
+  const idx=QUARTERS.indexOf(currentQ);const cards=[];
+  if(idx===0){
+    cards.push({label:'4Q 2025',badge:'bq4',badgeTxt:'Prior',amount:1050000,quota:0,note:'Reference baseline'});
+    cards.push({label:'Q1 2026',badge:'biprog',badgeTxt:'In Progress',amount:getCombined('Q1'),quota:getQuota('Q1'),note:''});
+  }else{
+    const pQ2=QUARTERS[idx-2];const pQ1=QUARTERS[idx-1];
+    if(pQ2)cards.push({label:pQ2+' 2026',badge:'bq4',badgeTxt:'Closed',amount:getCombined(pQ2),quota:getQuota(pQ2),note:''});
+    else cards.push({label:'4Q 2025',badge:'bq4',badgeTxt:'Prior',amount:1050000,quota:0,note:'Reference baseline'});
+    cards.push({label:pQ1+' 2026',badge:'bclosed',badgeTxt:'Closed',amount:getCombined(pQ1),quota:getQuota(pQ1),note:''});
+    cards.push({label:currentQ+' 2026',badge:'biprog',badgeTxt:'In Progress',amount:getCombined(currentQ),quota:getQuota(currentQ),note:''});
+  }
+  if(cards.length===2)cards.unshift({empty:true});
+  const maxAmt=Math.max(...cards.map(c=>c.amount||0),1);
+  cards.forEach((c,i)=>{
+    const card=document.createElement('div');card.className='ccard';
+    if(c.empty){card.style.cssText='background:transparent;border:none;';grid.appendChild(card);return;}
+    const barPct=c.amount>0?Math.round(c.amount/maxAmt*100):0;
+    const barColor=i===0?'#4b5563':i===1?'#f59e0b':'#0d9488';
+    let growth='';
+    if(i>0&&cards[i-1]&&!cards[i-1].empty&&cards[i-1].amount>0){
+      const prev=cards[i-1].amount;const pct=((c.amount-prev)/prev)*100;
+      growth='<div class="'+(pct>=0?'chip cg':'chip cr')+'">'+(pct>=0?'+':'')+Math.round(pct*10)/10+'% vs prior</div>';
+    }
+    let note=c.note||'';
+    if(c.quota>0&&c.amount>0)note=Math.round(c.amount/c.quota*100)+'% of quota reached';
+    else if(!c.note)note=c.amount>0?fmt(c.amount)+' total':'No data yet';
+    card.innerHTML='<div class="chdr"><div class="ctitle">'+c.label+'</div><div class="cbadge '+c.badge+'">'+c.badgeTxt+'</div></div><div class="cnum">'+(c.amount>0?fmt(c.amount):'—')+'</div><div class="csub">'+(c.quota>0?'Quota: '+fmt(c.quota):'No quota set')+'</div><div class="cbwrap"><div class="cb" style="width:'+barPct+'%;background:'+barColor+';"></div></div><div class="cnote">'+note+'</div>'+growth;
+    grid.appendChild(card);
+  });
+}
+
+function renderARR(){
+  const closedQs=QUARTERS.filter(q=>MONTHS[q].every(m=>state.revenue[q]&&state.revenue[q][m]&&state.revenue[q][m].amount>0));
+  const ytd=QUARTERS.reduce((s,q)=>s+getCombined(q),0);
+  const totalQuota=QUARTERS.reduce((s,q)=>s+getQuota(q),0);
+  const closedTotal=closedQs.reduce((s,q)=>s+getCombined(q),0);
+  const avgPerClosedQ=closedQs.length>0?closedTotal/closedQs.length:0;
+  const arrPace=avgPerClosedQ*4;
+  document.getElementById('arr-ytd').textContent=ytd>0?fmt(ytd):'—';
+  document.getElementById('arr-target').textContent=totalQuota>0?fmt(totalQuota):'—';
+  document.getElementById('arr-pace').textContent=arrPace>0?fmt(arrPace):'—';
+  const chart=document.getElementById('arr-chart');chart.innerHTML='';
+  const maxVal=Math.max(...QUARTERS.map(q=>Math.max(getCombined(q),getQuota(q))),avgPerClosedQ,1);
+  const chartH=140;
+  QUARTERS.forEach(q=>{
+    const actual=getCombined(q);const quota=getQuota(q);
+    const isClosed=closedQs.includes(q);
+    const isPartial=MONTHS[q].some(m=>state.revenue[q]&&state.revenue[q][m]&&state.revenue[q][m].amount>0)&&!isClosed;
+    const projH=avgPerClosedQ>0?Math.round(avgPerClosedQ/maxVal*chartH):0;
+    const actualH=actual>0?Math.round(actual/maxVal*chartH):0;
+    const quotaH=quota>0?Math.round(quota/maxVal*chartH):0;
+    const wrap=document.createElement('div');wrap.className='arr-bar-wrap';
+    const vl=document.createElement('div');vl.className='arr-bar-val';
+    vl.textContent=actual>0?fmt(actual):(avgPerClosedQ>0?fmt(avgPerClosedQ):'—');
+    wrap.appendChild(vl);
+    const outer=document.createElement('div');outer.style.cssText='position:relative;width:100%;height:'+chartH+'px;display:flex;align-items:flex-end;gap:3px;';
+    if(quotaH>0){const qb=document.createElement('div');qb.style.cssText='flex:1;height:'+quotaH+'px;background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.38);border-radius:4px;';outer.appendChild(qb);}
+    const ab=document.createElement('div');
+    if(isClosed)ab.style.cssText='flex:1;height:'+actualH+'px;background:#0d9488;border-radius:4px;';
+    else if(isPartial)ab.style.cssText='flex:1;height:'+actualH+'px;background:rgba(13,148,136,.4);border:1px dashed rgba(13,148,136,.7);border-radius:4px;';
+    else if(avgPerClosedQ>0)ab.style.cssText='flex:1;height:'+projH+'px;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.18);border-radius:4px;';
+    outer.appendChild(ab);
+    wrap.appendChild(outer);
+    const lbl=document.createElement('div');lbl.className='arr-bar-label';lbl.textContent=q;wrap.appendChild(lbl);
+    chart.appendChild(wrap);
+  });
+  const paceEl=document.getElementById('pace-text');
+  if(arrPace>0&&totalQuota>0){
+    const diff=arrPace-totalQuota;const pct=Math.round(Math.abs(diff)/totalQuota*100);
+    if(diff>=0)paceEl.innerHTML='At current pace, Apex is on track to <strong>exceed the full-year target by '+fmt(diff)+' (+'+pct+'%)</strong>.';
+    else paceEl.innerHTML='At current pace, Apex is projected to finish <strong>'+fmt(Math.abs(diff))+' below the full-year target (-'+pct+'%)</strong>.';
+  }else if(!avgPerClosedQ){paceEl.textContent='Enter revenue data to see the annual run rate projection.';}
+  else{paceEl.textContent='Set quarterly quotas to compare pace against the full-year target.';}
+}
+
+function switchTab(q){currentQ=q;document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',QUARTERS[i]===q));render();}
+render();
+</script>
+</body>
+</html>
