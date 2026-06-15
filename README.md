@@ -21,4 +21,4 @@ A fully interactive business intelligence dashboard built from scratch using HTM
 
 ## Built By
 
-[Giani Michael](www.linkedin.com/in/giancarlo-michael)
+[Giani Michael](https://www.linkedin.com/in/giancarlo-michael)
